@@ -1,8 +1,9 @@
 package congestion
 
 import (
-	"github.com/lucas-clemente/quic-go/congestion"
 	"time"
+
+	"github.com/lucas-clemente/quic-go/congestion"
 )
 
 const (
@@ -10,7 +11,7 @@ const (
 
 	pktInfoSlotCount = 4
 	minSampleCount   = 50
-	minAckRate       = 0.8
+	minAckRate       = 0.5
 )
 
 type BrutalSender struct {
@@ -33,7 +34,7 @@ func NewBrutalSender(bps congestion.ByteCount) *BrutalSender {
 	bs := &BrutalSender{
 		bps:             bps,
 		maxDatagramSize: initMaxDatagramSize,
-		ackRate:         1,
+		ackRate:         0.5,
 	}
 	bs.pacer = newPacer(func() congestion.ByteCount {
 		return congestion.ByteCount(float64(bs.bps) / bs.ackRate)
@@ -82,7 +83,7 @@ func (b *BrutalSender) OnPacketAcked(number congestion.PacketNumber, ackedBytes 
 		b.pktInfoSlots[slot].AckCount = 1
 		b.pktInfoSlots[slot].LossCount = 0
 	}
-	b.updateAckRate(currentTimestamp)
+	// b.updateAckRate(currentTimestamp)
 }
 
 func (b *BrutalSender) OnPacketLost(number congestion.PacketNumber, lostBytes congestion.ByteCount,
@@ -97,7 +98,7 @@ func (b *BrutalSender) OnPacketLost(number congestion.PacketNumber, lostBytes co
 		b.pktInfoSlots[slot].AckCount = 0
 		b.pktInfoSlots[slot].LossCount = 1
 	}
-	b.updateAckRate(currentTimestamp)
+	// b.updateAckRate(currentTimestamp)
 }
 
 func (b *BrutalSender) SetMaxDatagramSize(size congestion.ByteCount) {
@@ -105,25 +106,25 @@ func (b *BrutalSender) SetMaxDatagramSize(size congestion.ByteCount) {
 	b.pacer.SetMaxDatagramSize(size)
 }
 
-func (b *BrutalSender) updateAckRate(currentTimestamp int64) {
-	minTimestamp := currentTimestamp - pktInfoSlotCount
-	var ackCount, lossCount uint64
-	for _, info := range b.pktInfoSlots {
-		if info.Timestamp < minTimestamp {
-			continue
-		}
-		ackCount += info.AckCount
-		lossCount += info.LossCount
-	}
-	if ackCount+lossCount < minSampleCount {
-		b.ackRate = 1
-	}
-	rate := float64(ackCount) / float64(ackCount+lossCount)
-	if rate < minAckRate {
-		b.ackRate = minAckRate
-	}
-	b.ackRate = rate
-}
+// func (b *BrutalSender) updateAckRate(currentTimestamp int64) {
+// 	minTimestamp := currentTimestamp - pktInfoSlotCount
+// 	var ackCount, lossCount uint64
+// 	for _, info := range b.pktInfoSlots {
+// 		if info.Timestamp < minTimestamp {
+// 			continue
+// 		}
+// 		ackCount += info.AckCount
+// 		lossCount += info.LossCount
+// 	}
+// 	if ackCount+lossCount < minSampleCount {
+// 		b.ackRate = 1
+// 	}
+// 	rate := float64(ackCount) / float64(ackCount+lossCount)
+// 	if rate < minAckRate {
+// 		b.ackRate = minAckRate
+// 	}
+// 	b.ackRate = rate
+// }
 
 func (b *BrutalSender) InSlowStart() bool {
 	return false

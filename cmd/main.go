@@ -66,9 +66,9 @@ var rootCmd = &cobra.Command{
 		}
 
 		// check update
-		if !viper.GetBool("no-check") {
-			go checkUpdate()
-		}
+		// if !viper.GetBool("no-check") {
+		// 	go checkUpdate()
+		// }
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		clientCmd.Run(cmd, args)
