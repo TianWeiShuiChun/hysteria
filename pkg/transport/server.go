@@ -3,26 +3,25 @@ package transport
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/lucas-clemente/quic-go"
-	"github.com/tobyxdd/hysteria/pkg/conns/faketcp"
-	"github.com/tobyxdd/hysteria/pkg/conns/udp"
-	"github.com/tobyxdd/hysteria/pkg/conns/wechat"
-	"github.com/tobyxdd/hysteria/pkg/obfs"
-	"github.com/tobyxdd/hysteria/pkg/sockopt"
-	"github.com/tobyxdd/hysteria/pkg/utils"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/HyNetwork/hysteria/pkg/conns/faketcp"
+	"github.com/HyNetwork/hysteria/pkg/conns/udp"
+	"github.com/HyNetwork/hysteria/pkg/conns/wechat"
+	"github.com/HyNetwork/hysteria/pkg/obfs"
+	"github.com/HyNetwork/hysteria/pkg/sockopt"
+	"github.com/HyNetwork/hysteria/pkg/utils"
+	"github.com/lucas-clemente/quic-go"
 )
 
 type ServerTransport struct {
-	Dialer        *net.Dialer
-	SOCKS5Client  *SOCKS5Client
-	PrefEnabled   bool
-	PrefIPv6      bool
-	PrefExclusive bool
-	LocalUDPAddr  *net.UDPAddr
-	LocalUDPIntf  *net.Interface
+	Dialer            *net.Dialer
+	SOCKS5Client      *SOCKS5Client
+	ResolvePreference ResolvePreference
+	LocalUDPAddr      *net.UDPAddr
+	LocalUDPIntf      *net.Interface
 }
 
 // AddrEx is like net.TCPAddr or net.UDPAddr, but with additional domain information for SOCKS5.
@@ -74,7 +73,7 @@ var DefaultServerTransport = &ServerTransport{
 	Dialer: &net.Dialer{
 		Timeout: 8 * time.Second,
 	},
-	PrefEnabled: false,
+	ResolvePreference: ResolvePreferenceDefault,
 }
 
 func (st *ServerTransport) quicPacketConn(proto string, laddr string, obfs obfs.Obfuscator) (net.PacketConn, error) {
@@ -142,13 +141,8 @@ func (st *ServerTransport) ResolveIPAddr(address string) (*net.IPAddr, bool, err
 	if ip != nil {
 		return &net.IPAddr{IP: ip, Zone: zone}, false, nil
 	}
-	if st.PrefEnabled {
-		ipAddr, err := resolveIPAddrWithPreference(address, st.PrefIPv6, st.PrefExclusive)
-		return ipAddr, true, err
-	} else {
-		ipAddr, err := net.ResolveIPAddr("ip", address)
-		return ipAddr, true, err
-	}
+	ipAddr, err := resolveIPAddrWithPreference(address, st.ResolvePreference)
+	return ipAddr, true, err
 }
 
 func (st *ServerTransport) DialTCP(raddr *AddrEx) (*net.TCPConn, error) {
