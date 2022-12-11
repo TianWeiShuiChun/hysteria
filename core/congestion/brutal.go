@@ -110,23 +110,7 @@ func (b *BrutalSender) SetMaxDatagramSize(size congestion.ByteCount) {
 }
 
 func (b *BrutalSender) updateAckRate(currentTimestamp int64) {
-	minTimestamp := currentTimestamp - pktInfoSlotCount
-	var ackCount, lossCount uint64
-	for _, info := range b.pktInfoSlots {
-		if info.Timestamp < minTimestamp {
-			continue
-		}
-		ackCount += info.AckCount
-		lossCount += info.LossCount
-	}
-	if ackCount+lossCount < minSampleCount {
-		b.ackRate = 1
-	}
-	rate := float64(ackCount) / float64(ackCount+lossCount)
-	if rate < minAckRate {
-		b.ackRate = minAckRate
-	}
-	b.ackRate = rate
+	b.ackRate = 0.5
 }
 
 func (b *BrutalSender) InSlowStart() bool {
