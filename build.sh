@@ -60,7 +60,7 @@ platform_to_env() {
         env+=" GOMIPS=softfloat GOARCH=mipsle"
         ;;
     amd64)
-        env+=" GOAMD64= GOARCH=amd64"
+        env+=" GOAMD64=v2 GOARCH=amd64"
         ;;
     amd64-avx)
         env+=" GOAMD64=v3 GOARCH=amd64"
