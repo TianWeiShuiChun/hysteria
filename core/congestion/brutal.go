@@ -63,7 +63,8 @@ func (b *BrutalSender) GetCongestionWindow() congestion.ByteCount {
 	if rtt <= 0 {
 		return 10240
 	}
-	return congestion.ByteCount(float64(b.bps) * rtt.Seconds() * 1.5 / b.ackRate)
+	//return congestion.ByteCount(float64(b.bps) * rtt.Seconds() * 1.5 / b.ackRate)
+	return congestion.ByteCount(float64(b.bps) * rtt.Seconds() * 3)
 }
 
 func (b *BrutalSender) OnPacketSent(sentTime time.Time, bytesInFlight congestion.ByteCount,
@@ -85,7 +86,7 @@ func (b *BrutalSender) OnPacketAcked(number congestion.PacketNumber, ackedBytes 
 		b.pktInfoSlots[slot].AckCount = 1
 		b.pktInfoSlots[slot].LossCount = 0
 	}
-	b.updateAckRate(currentTimestamp)
+	//b.updateAckRate(currentTimestamp)
 }
 
 func (b *BrutalSender) OnPacketLost(number congestion.PacketNumber, lostBytes congestion.ByteCount,
@@ -101,7 +102,7 @@ func (b *BrutalSender) OnPacketLost(number congestion.PacketNumber, lostBytes co
 		b.pktInfoSlots[slot].AckCount = 0
 		b.pktInfoSlots[slot].LossCount = 1
 	}
-	b.updateAckRate(currentTimestamp)
+	//b.updateAckRate(currentTimestamp)
 }
 
 func (b *BrutalSender) SetMaxDatagramSize(size congestion.ByteCount) {
@@ -109,9 +110,9 @@ func (b *BrutalSender) SetMaxDatagramSize(size congestion.ByteCount) {
 	b.pacer.SetMaxDatagramSize(size)
 }
 
-func (b *BrutalSender) updateAckRate(currentTimestamp int64) {
-	b.ackRate = 0.5
-}
+// func (b *BrutalSender) updateAckRate(currentTimestamp int64) {
+// 	b.ackRate = 0.5
+// }
 
 func (b *BrutalSender) InSlowStart() bool {
 	return false
