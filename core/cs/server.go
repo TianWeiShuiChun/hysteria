@@ -48,7 +48,7 @@ type Server struct {
 	trafficCounter TrafficCounter
 
 	pktConn  net.PacketConn
-	listener quic.Listener
+	listener quic.EarlyListener
 }
 
 func NewServer(tlsConfig *tls.Config, quicConfig *quic.Config,
@@ -60,7 +60,7 @@ func NewServer(tlsConfig *tls.Config, quicConfig *quic.Config,
 	trafficCounter TrafficCounter,
 ) (*Server, error) {
 	quicConfig.DisablePathMTUDiscovery = quicConfig.DisablePathMTUDiscovery || pmtud.DisablePathMTUDiscovery
-	listener, err := quic.Listen(pktConn, tlsConfig, quicConfig)
+	listener, err := quic.ListenEarly(pktConn, tlsConfig, quicConfig)
 	if err != nil {
 		_ = pktConn.Close()
 		return nil, err
