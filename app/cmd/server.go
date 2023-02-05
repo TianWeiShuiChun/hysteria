@@ -86,7 +86,7 @@ func server(config *serverConfig) {
 		KeepAlivePeriod:                0, // Keep alive should solely be client's responsibility
 		DisablePathMTUDiscovery:        config.DisableMTUDiscovery,
 		EnableDatagrams:                true,
-		Allow0RTT:                      config.Allow0RTT,
+		Allow0RTT:                      func(net.Addr) bool { return true }
 	}
 	if !quicConfig.DisablePathMTUDiscovery && pmtud.DisablePathMTUDiscovery {
 		logrus.Info("Path MTU Discovery is not yet supported on this platform")
