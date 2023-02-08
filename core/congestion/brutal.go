@@ -38,7 +38,7 @@ func NewBrutalSender(bps uint64) *BrutalSender {
 	}
 	bs.pacer = newPacer(func() congestion.ByteCount {
 		//return congestion.ByteCount(float64(bs.bps) / bs.ackRate)
-		return congestion.ByteCount(float64(bs.bps) * 2)
+		return congestion.ByteCount(float64(bs.bps) * 1.5)
 	})
 	return bs
 }
@@ -65,7 +65,7 @@ func (b *BrutalSender) GetCongestionWindow() congestion.ByteCount {
 		return 10240
 	}
 	//return congestion.ByteCount(float64(b.bps) * rtt.Seconds() * 1.5 / b.ackRate)
-	return congestion.ByteCount(float64(b.bps) * rtt.Seconds() * 2)
+	return congestion.ByteCount(float64(b.bps) * rtt.Seconds() * 1.5)
 }
 
 func (b *BrutalSender) OnPacketSent(sentTime time.Time, bytesInFlight congestion.ByteCount,
